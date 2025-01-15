@@ -62,7 +62,7 @@ import tqdm
 # In[2]:
 
 
-seed = 1234
+seed = 12
 
 np.random.seed(seed)
 torch.manual_seed(seed)
@@ -797,3 +797,4 @@ text = "This film is not great, it's terrible!"
 
 predict_sentiment(text, model, tokenizer, vocab, device)
 
+plt.show()
