@@ -195,7 +195,13 @@ class LSTM(nn.Module):
             dropout=dropout_rate,
             batch_first=True,
         )
-        self.fc = nn.Linear(hidden_dim * 2 if bidirectional else hidden_dim, output_dim)
+        # self.fc = nn.Linear(hidden_dim * 2 if bidirectional else hidden_dim, output_dim)
+        self.fc = nn.Sequential(
+            nn.Linear(hidden_dim * 2, 4096),
+            nn.ReLU(),
+            nn.Dropout(dropout_rate),
+            nn.Linear(4096, output_dim)
+        )
         self.dropout = nn.Dropout(dropout_rate)
 
     def forward(self, ids, length):
@@ -223,13 +229,11 @@ class LSTM(nn.Module):
 
 
 # In[19]:
-
-
 vocab_size = len(vocab)
-embedding_dim = 300
-hidden_dim = 300
+embedding_dim = 768    # 原为300
+hidden_dim = 1024      # 原为300
 output_dim = len(train_data.unique("label"))
-n_layers = 2
+n_layers = 4           # 原为2
 bidirectional = True
 dropout_rate = 0.5
 
@@ -276,22 +280,22 @@ def initialize_weights(m):
 model.apply(initialize_weights)
 
 
-# In[24]:
-
-
-vectors = torchtext.vocab.GloVe()
-
-
-# In[25]:
-
-
-pretrained_embedding = vectors.get_vecs_by_tokens(vocab.get_itos())
-
-
-# In[26]:
-
-
-model.embedding.weight.data = pretrained_embedding
+# # In[24]:
+#
+#
+# vectors = torchtext.vocab.GloVe()
+#
+#
+# # In[25]:
+#
+#
+# pretrained_embedding = vectors.get_vecs_by_tokens(vocab.get_itos())
+#
+#
+# # In[26]:
+#
+#
+# model.embedding.weight.data = pretrained_embedding
 
 
 # In[27]:
