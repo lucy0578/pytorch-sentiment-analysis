@@ -484,6 +484,7 @@ predict_sentiment(text, model, tokenizer, vocab, device)
 text = "This film is not terrible, it's great!"
 
 predict_sentiment(text, model, tokenizer, vocab, device)
+predict_sentiment(text, model, tokenizer, vocab, device)
 
 
 # In[43]:
@@ -491,5 +492,4 @@ predict_sentiment(text, model, tokenizer, vocab, device)
 
 text = "This film is not great, it's terrible!"
 
-predict_sentiment(text, model, tokenizer, vocab, device)
 
