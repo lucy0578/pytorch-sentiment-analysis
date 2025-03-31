@@ -14,6 +14,7 @@ import torch.nn as nn
 import torch.optim as optim
 import torchtext
 import tqdm
+from sklearn.metrics import classification_report, roc_auc_score
 
 torch.backends.cudnn.benchmark = True
 torch.cuda.empty_cache()
@@ -236,7 +237,7 @@ hidden_dim = 1024      # 原为300
 output_dim = len(train_data.unique("label"))
 n_layers = 4           # 原为2
 bidirectional = True
-dropout_rate = 0.5
+dropout_rate = 0.6
 
 model = LSTM(
     vocab_size,
@@ -353,21 +354,56 @@ def train(dataloader, model, criterion, optimizer, device):
 # In[32]:
 
 
+# 修改 In[32] 单元格的evaluate函数：
+from sklearn.metrics import classification_report, roc_auc_score
+
+
 def evaluate(dataloader, model, criterion, device):
     model.eval()
     epoch_losses = []
     epoch_accs = []
+    all_preds = []
+    all_labels = []
+
     with torch.no_grad():
         for batch in tqdm.tqdm(dataloader, desc="evaluating..."):
             ids = batch["ids"].to(device)
             length = batch["length"]
             label = batch["label"].to(device)
             prediction = model(ids, length)
+
             loss = criterion(prediction, label)
             accuracy = get_accuracy(prediction, label)
+
+            # 收集预测结果
+            probs = torch.softmax(prediction, dim=1)
+            all_preds.append(probs.cpu().numpy())
+            all_labels.append(label.cpu().numpy())
+
             epoch_losses.append(loss.item())
             epoch_accs.append(accuracy.item())
-    return np.mean(epoch_losses), np.mean(epoch_accs)
+
+    # 合并所有batch结果
+    all_preds = np.concatenate(all_preds)
+    all_labels = np.concatenate(all_labels)
+
+    # 计算指标
+    report = classification_report(
+        all_labels,
+        all_preds.argmax(axis=1),
+        target_names=['negative', 'positive'],
+        output_dict=True
+    )
+    auroc = roc_auc_score(all_labels, all_preds[:, 1])
+
+    return (
+        np.mean(epoch_losses),
+        np.mean(epoch_accs),
+        report['macro avg']['precision'],
+        report['macro avg']['recall'],
+        report['macro avg']['f1-score'],
+        auroc
+    )
 
 
 # In[33]:
@@ -387,23 +423,28 @@ def get_accuracy(prediction, label):
 n_epochs = 10
 best_valid_loss = float("inf")
 
+# 修改 In[34] 单元格的训练循环：
 metrics = collections.defaultdict(list)
 
 for epoch in range(n_epochs):
-    train_loss, train_acc = train(
-        train_data_loader, model, criterion, optimizer, device
-    )
-    valid_loss, valid_acc = evaluate(valid_data_loader, model, criterion, device)
-    metrics["train_losses"].append(train_loss)
-    metrics["train_accs"].append(train_acc)
-    metrics["valid_losses"].append(valid_loss)
-    metrics["valid_accs"].append(valid_acc)
-    if valid_loss < best_valid_loss:
-        best_valid_loss = valid_loss
-        torch.save(model.state_dict(), "lstm.pt")
-    print(f"epoch: {epoch}")
-    print(f"train_loss: {train_loss:.3f}, train_acc: {train_acc:.3f}")
-    print(f"valid_loss: {valid_loss:.3f}, valid_acc: {valid_acc:.3f}")
+    train_loss, train_acc = train(...)
+    valid_loss, valid_acc, valid_prec, valid_rec, valid_f1, valid_auc = evaluate(...)
+
+    # 记录所有指标
+    metrics['train_losses'].append(train_loss)
+    metrics['train_accs'].append(train_acc)
+    metrics['valid_losses'].append(valid_loss)
+    metrics['valid_accs'].append(valid_acc)
+    metrics['valid_precisions'].append(valid_prec)
+    metrics['valid_recalls'].append(valid_rec)
+    metrics['valid_f1s'].append(valid_f1)
+    metrics['valid_aucs'].append(valid_auc)
+
+    # 打印结果
+    print(f"valid_precision: {valid_prec:.3f}")
+    print(f"valid_recall: {valid_rec:.3f}")
+    print(f"valid_f1: {valid_f1:.3f}")
+    print(f"valid_auc: {valid_auc:.3f}")
 
 
 # In[35]:
@@ -439,13 +480,18 @@ ax.grid()
 
 model.load_state_dict(torch.load("lstm.pt"))
 
-test_loss, test_acc = evaluate(test_data_loader, model, criterion, device)
+test_loss, test_acc, test_prec, test_rec, test_f1, test_auc = evaluate(
+    test_data_loader, model, criterion, device
+)
 
 
 # In[38]:
 
 
-print(f"test_loss: {test_loss:.3f}, test_acc: {test_acc:.3f}")
+print(f"Test Precision: {test_prec:.3f}")
+print(f"Test Recall: {test_rec:.3f}")
+print(f"Test F1: {test_f1:.3f}")
+print(f"Test AUC: {test_auc:.3f}")
 
 
 # In[39]:
