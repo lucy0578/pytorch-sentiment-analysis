@@ -355,7 +355,6 @@ def train(dataloader, model, criterion, optimizer, device):
 
 
 # 修改 In[32] 单元格的evaluate函数：
-from sklearn.metrics import classification_report, roc_auc_score
 
 
 def evaluate(dataloader, model, criterion, device):
@@ -427,8 +426,8 @@ best_valid_loss = float("inf")
 metrics = collections.defaultdict(list)
 
 for epoch in range(n_epochs):
-    train_loss, train_acc = train(...)
-    valid_loss, valid_acc, valid_prec, valid_rec, valid_f1, valid_auc = evaluate(...)
+    train_loss, train_acc = train(train_data_loader, model, criterion, optimizer, device)
+    valid_loss, valid_acc, valid_prec, valid_rec, valid_f1, valid_auc = evaluate(valid_data_loader, model, criterion, device)
 
     # 记录所有指标
     metrics['train_losses'].append(train_loss)
@@ -439,6 +438,9 @@ for epoch in range(n_epochs):
     metrics['valid_recalls'].append(valid_rec)
     metrics['valid_f1s'].append(valid_f1)
     metrics['valid_aucs'].append(valid_auc)
+    if valid_loss < best_valid_loss:
+        best_valid_loss = valid_loss
+        torch.save(model.state_dict(), "lstm.pt")
 
     # 打印结果
     print(f"valid_precision: {valid_prec:.3f}")
