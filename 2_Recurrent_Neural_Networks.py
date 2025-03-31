@@ -443,6 +443,7 @@ for epoch in range(n_epochs):
         torch.save(model.state_dict(), "lstm.pt")
 
     # 打印结果
+    print(f"epoch: {epoch}")
     print(f"valid_precision: {valid_prec:.3f}")
     print(f"valid_recall: {valid_rec:.3f}")
     print(f"valid_f1: {valid_f1:.3f}")
