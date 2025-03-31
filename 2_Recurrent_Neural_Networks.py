@@ -15,7 +15,8 @@ import torch.optim as optim
 import torchtext
 import tqdm
 
-
+torch.backends.cudnn.benchmark = True
+torch.cuda.empty_cache()
 # In[2]:
 
 
@@ -163,7 +164,7 @@ def get_data_loader(dataset, batch_size, pad_index, shuffle=False):
 # In[17]:
 
 
-batch_size = 512
+batch_size = 256
 
 train_data_loader = get_data_loader(train_data, batch_size, pad_index, shuffle=True)
 valid_data_loader = get_data_loader(valid_data, batch_size, pad_index)
