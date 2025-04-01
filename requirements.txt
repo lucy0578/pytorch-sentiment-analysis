@@ -1,9 +1,7 @@
-torch==2.3.0
-torchvision==0.18.0
-torchaudio==2.3.0
+torch==2.2.0
 numpy==1.26.0
 datasets
-torchtext==0.18.0
+torchtext==0.17.0
 tqdm
 matplotlib
 transformers==4.39.3

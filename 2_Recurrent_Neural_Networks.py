@@ -430,10 +430,10 @@ for epoch in range(n_epochs):
     valid_loss, valid_acc, valid_prec, valid_rec, valid_f1, valid_auc = evaluate(valid_data_loader, model, criterion, device)
 
     # 记录所有指标
-    metrics['train_losses'].append(train_loss)
-    metrics['train_accs'].append(train_acc)
-    metrics['valid_losses'].append(valid_loss)
-    metrics['valid_accs'].append(valid_acc)
+    metrics["train_losses"].append(train_loss)
+    metrics["train_accs"].append(train_acc)
+    metrics["valid_losses"].append(valid_loss)
+    metrics["valid_accs"].append(valid_acc)
     metrics['valid_precisions'].append(valid_prec)
     metrics['valid_recalls'].append(valid_rec)
     metrics['valid_f1s'].append(valid_f1)
@@ -444,10 +444,9 @@ for epoch in range(n_epochs):
 
     # 打印结果
     print(f"epoch: {epoch}")
-    print(f"valid_precision: {valid_prec:.3f}")
-    print(f"valid_recall: {valid_rec:.3f}")
-    print(f"valid_f1: {valid_f1:.3f}")
-    print(f"valid_auc: {valid_auc:.3f}")
+    print(f"train_loss: {train_loss:.3f}, train_acc: {train_acc:.3f}")
+    print(f"valid_loss: {valid_loss:.3f}, valid_acc: {valid_acc:.3f}")
+    print(f"Epoch {epoch}: peak GPU memory {torch.cuda.max_memory_allocated() / (1024 ** 3):.2f} GB")
 
 
 # In[35]:
@@ -490,7 +489,7 @@ test_loss, test_acc, test_prec, test_rec, test_f1, test_auc = evaluate(
 
 # In[38]:
 
-
+print(f"Test loss: {test_loss:.3f}, Test acc: {test_acc:.3f}")
 print(f"Test Precision: {test_prec:.3f}")
 print(f"Test Recall: {test_rec:.3f}")
 print(f"Test F1: {test_f1:.3f}")
